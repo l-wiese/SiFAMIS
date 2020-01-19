@@ -1,0 +1,12 @@
+version: '2'
+services:
+  web:
+    image: tomcat
+    network_mode: "host"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./target/SiFAMIS.war:/usr/local/tomcat/webapps/ROOT.war
+      - ./target/SiFAMIS:/usr/local/tomcat/webapps/ROOT
+
+

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SiFAMIS Query Interface</title>
+</head>
+<body>
+
+<h3>Query Interface </h3>
+
+Some descriptive text here ...
+
+<form action="SiFAMIS/query" method="post" >
+    <fieldset>
+        <legend>SiFAMIS Query Interface</legend>
+        <pre>
+        Enter Query: <input type="text" name="query" required/><br/>
+
+        DDB Configuration:
+
+        Mode: <select name="mode" required>
+            <option value="ref" selected>Reference Implementation</option>
+            <option value="mat">Materialized Fragments</option>
+            <option value="par">Partition Numbers</option>
+        </select>
+
+        Number of terms: <select name="terms" required>
+            <option value="10" selected>10 Terms</option>
+            <option value="30">30 Terms</option>
+            <option value="100">100 Terms</option>
+        </select>
+
+        Alpha = <input type="number" name="alpha" min="0" max="1" step="0.0001" value="0.12" required><br/>
+
+        <input type="checkbox" name="fqa" value="true" >  Enable Flexible Query Answering
+
+                                    <input type="submit" value="Submit"/>
+        </pre>
+    </fieldset>
+
+</form>
+
+
+</body>
+</html>

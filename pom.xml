@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+
+    <!-- Project -->
+    <groupId>private</groupId>
+    <artifactId>SiFAMIS</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+
+    <!-- Properties -->
+    <properties>
+
+        <!-- Versions -->
+        <ignite.version>2.7.6</ignite.version>
+        <jena.version>3.9.0</jena.version>
+        <jOOQ.version>3.11.7</jOOQ.version>
+        <jdk.version>1.8</jdk.version>
+        <compilerplugin.version>3.8.0</compilerplugin.version>
+        <warplugin.version>3.2.2</warplugin.version>
+        <jarplugin.version>3.1.1</jarplugin.version>
+        <dependplugin.version>3.1.1</dependplugin.version>
+        <resplugin.version>3.1.0</resplugin.version>
+        <apachecommons.version>4.2</apachecommons.version>
+        <javafaker.version>0.16</javafaker.version>
+        <snakeyaml.version>1.23</snakeyaml.version>
+        <jsqlparser.version>1.4</jsqlparser.version>
+        <jerseyserver.version>1.19.4</jerseyserver.version>
+        <glassfishjaxrs.version>2.28</glassfishjaxrs.version>
+        <javaxservlet.version>4.0.1</javaxservlet.version>
+        <javaxrsapi.version>2.1.1</javaxrsapi.version>
+
+        <!-- Others -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    </properties>
+
+    <!-- Build -->
+    <build>
+
+        <finalName>SiFAMIS</finalName>
+
+        <plugins>
+
+            <!-- Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compilerplugin.version}</version>
+                <configuration>
+                    <source>${jdk.version}</source>
+                    <target>${jdk.version}</target>
+                </configuration>
+            </plugin>
+
+            <!-- WAR-Plugin -->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-war-plugin</artifactId>-->
+                <!--<version>${warplugin.version}</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>make-a-war</id>-->
+                        <!--<phase>package</phase>-->
+                        <!--<configuration>-->
+                            <!--<attachClasses>true</attachClasses>-->
+                            <!--<webXml>${basedir}/web/WEB-INF/web.xml</webXml>-->
+                            <!--<webResources>-->
+                                <!--<resource>-->
+                                    <!--&lt;!&ndash; relative to pom.xml&ndash;&gt;-->
+                                    <!--<directory>html</directory>-->
+                                <!--</resource>-->
+
+                                <!--<resource>-->
+                                    <!--&lt;!&ndash; relative to pom.xml, mapped to csv&ndash;&gt;-->
+                                    <!--<directory>csv</directory>-->
+                                    <!--<targetPath>csv</targetPath>-->
+                                <!--</resource>-->
+                            <!--</webResources>-->
+                        <!--</configuration>-->
+                        <!--<goals>-->
+                            <!--<goal>war</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+
+            <!-- JAR-Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${jarplugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <index>true</index>
+                                <manifest>
+                                    <mainClass>SiFAMIS</mainClass>
+                                </manifest>
+                            </archive>
+                            <outputDirectory>${env.IGNITE_HOME}/libs</outputDirectory>
+                            <outputDirectory>${project.build.directory}/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Dependency Plugin-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${dependplugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-dependencies-2-ignite</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${env.IGNITE_HOME}/libs</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Resources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${resplugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${env.IGNITE_HOME}/libs</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/</directory>
+                                    <includes>
+                                        <include>SiFAMIS.jar</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>copy-csv</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${env.IGNITE_HOME}/libs/csv</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/csv</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>copy-xml</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${env.IGNITE_HOME}/config</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/config</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>copy-clusterings</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${env.IGNITE_HOME}/libs/clustering</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/clustering</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+
+    <dependencies>
+
+        <!--javax.cache-->
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
+        <!--Ignite-->
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-core</artifactId>
+            <version>${ignite.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-spring</artifactId>
+            <version>${ignite.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-indexing</artifactId>
+            <version>${ignite.version}</version>
+        </dependency>
+
+
+        <!--Jena-->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena-libs</artifactId>
+            <type>pom</type>
+            <version>${jena.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>apache-jena</artifactId>
+            <type>pom</type>
+            <version>${jena.version}</version>
+        </dependency>
+
+        <!--apache commons collections-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>${apachecommons.version}</version>
+        </dependency>
+
+
+        <!--faker-->
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>${javafaker.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+        </dependency>
+
+        <!-- JSqlParser-->
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+        <!-- Apache commons cli parser -->
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+        <!-- JAX-RS, Jersey -->
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>${jerseyserver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.bundles</groupId>
+            <artifactId>jaxrs-ri</artifactId>
+            <version>${glassfishjaxrs.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${javaxservlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>${javaxrsapi.version}</version>
+        </dependency>
+
+
+        <!-- Neo4J -->
+        <dependency>
+            <groupId>org.neo4j.driver</groupId>
+            <artifactId>neo4j-java-driver</artifactId>
+            <version>1.7.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-jdbc-driver</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+
+    </dependencies>
+</project>

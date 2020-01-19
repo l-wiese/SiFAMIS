@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!--
+    Ignite server configuration file for GWDG cloud servers
+-->
+<!--suppress ALL -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- Ignite config -->
+    <bean id="ignite.cfg" class="org.apache.ignite.configuration.IgniteConfiguration">
+
+        <!-- Enable peer class loading -->
+        <property name="peerClassLoadingEnabled" value="true"/>
+
+        <!-- Redefining maximum memory size for the cluster node usage. -->
+        <property name="dataStorageConfiguration">
+            <bean class="org.apache.ignite.configuration.DataStorageConfiguration">
+                <!-- Data region config -->
+                <property name="defaultDataRegionConfiguration">
+                    <bean class="org.apache.ignite.configuration.DataRegionConfiguration">
+                        <!-- Set the size of the default region to 6GB (of 8GB). -->
+                        <property name="maxSize" value="#{6L * 1024 * 1024 * 1024}"/>
+
+                        <!-- Enable metrics for this data region  -->
+                        <property name="metricsEnabled" value="true"/>
+                    </bean>
+                </property>
+
+                <!-- Set the page size to 4 KB (=server page size)-->
+                <property name="pageSize" value="#{4 * 1024}"/>
+            </bean>
+        </property>
+
+        <!-- Explicitly configure TCP discovery SPI to provide list of initial nodes. -->
+        <property name="discoverySpi">
+            <bean class="org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi">
+                <!-- Local ports configuration -->
+                <property name="localPort" value="47500"/>
+                <property name="localPortRange" value="10"/>
+
+                <!-- IP finder for this cluster (note: server's own local IPs are present) -->
+                <property name="ipFinder">
+                    <bean class="org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder">
+                        <property name="addresses">
+                            <list>
+                                <!-- Local IP addresses of GWDG cloud servers. -->
+                                <value>10.254.1.5:47500..47509</value>
+                                <value>10.254.1.6:47500..47509</value>
+                                <value>10.254.1.7:47500..47509</value>
+                            </list>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+
+        <!-- Overwrite local ports -->
+        <property name="communicationSpi">
+            <bean class="org.apache.ignite.spi.communication.tcp.TcpCommunicationSpi">
+                <!-- Override local port. -->
+                <property name="localPort" value="47100"/>
+                <property name="localPortRange" value="10"/>
+                <property name="usePairedConnections" value="true"/>
+            </bean>
+        </property>
+
+        <!-- Address resolver: map local IP addresses to public IP addresses-->
+        <property name="addressResolver">
+            <bean class="org.apache.ignite.configuration.BasicAddressResolver">
+                <constructor-arg>
+                    <map>
+                        <entry key="10.254.1.5" value="141.5.107.8"/>   <!-- 1st server -->
+                        <entry key="10.254.1.6" value="141.5.107.75"/>  <!-- 2nd server -->
+                        <entry key="10.254.1.7" value="141.5.107.76"/>  <!-- 3rd server -->
+                    </map>
+                </constructor-arg>
+            </bean>
+        </property>
+
+
+        <!-- Cache TEMPLATE configurations (will be created with sql CREATE TABLE then) -->
+        <property name="cacheConfiguration">
+            <list>
+                <bean id="cache-template-bean" abstract="true"
+                      class="org.apache.ignite.configuration.CacheConfiguration">
+                    <!-- Template for fragment tables -->
+                    <property name="name" value="illFragmentTemplate*"/>
+                    <property name="cacheMode" value="PARTITIONED"/>
+                    <property name="backups" value="0"/>
+                    <property name="affinity">
+                        <bean class="clusteringbasedfragmentation.ClusteringAffinityFunction">
+                            <constructor-arg index="0" value="0.12"/>
+                            <constructor-arg index="1">
+                                <bean class="neo4j.Neo4JSimilarity">
+                                    <constructor-arg index="0" value="localhost:7687"></constructor-arg>
+                                    <constructor-arg index="1" value="neo4j"></constructor-arg>
+                                    <constructor-arg index="2" value="keg"></constructor-arg>
+                                    <constructor-arg index="3" value="csv/terms10.txt"></constructor-arg>
+                                </bean>
+                            </constructor-arg>
+                        </bean>
+                    </property>
+                    <property name="keyConfiguration">
+                        <list>
+                            <bean class="org.apache.ignite.cache.CacheKeyConfiguration">
+                                <property name="typeName" value="materializedfragments.IllKey"/>
+                                <property name="affinityKeyFieldName" value="key"/>
+                            </bean>
+                        </list>
+                    </property>
+                    <property name="statisticsEnabled" value="true"/>
+                </bean>
+
+                <bean id="cache-template-bean" abstract="true"
+                      class="org.apache.ignite.configuration.CacheConfiguration">
+                    <property name="name" value="infoTemplate*"/>
+                    <property name="cacheMode" value="PARTITIONED"/>
+                    <property name="backups" value="0"/>
+                    <property name="affinity">
+                        <bean class="clusteringbasedfragmentation.ClusteringAffinityFunction">
+                            <constructor-arg index="0" value="0.12"/>
+                            <constructor-arg index="1">
+                                <bean class="neo4j.Neo4JSimilarity">
+                                    <constructor-arg index="0" value="localhost:7687"></constructor-arg>
+                                    <constructor-arg index="1" value="neo4j"></constructor-arg>
+                                    <constructor-arg index="2" value="keg"></constructor-arg>
+                                    <constructor-arg index="3" value="csv/terms10.txt"></constructor-arg>
+                                </bean>
+                            </constructor-arg>
+                        </bean>
+                    </property>
+                    <property name="keyConfiguration">
+                        <list>
+                            <bean class="org.apache.ignite.cache.CacheKeyConfiguration">
+                                <property name="typeName" value="materializedfragments.FragIDKey"/>
+                                <property name="affinityKeyFieldName" value="key"/>
+                            </bean>
+                        </list>
+                    </property>
+
+                    <property name="statisticsEnabled" value="true"/>
+                </bean>
+            </list>
+        </property>
+
+    </bean>
+</beans>
