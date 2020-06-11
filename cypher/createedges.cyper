@@ -1,0 +1,7 @@
+USING PERIODIC COMMIT
+LOAD CSV FROM "file:///ctree2019MeSH.csv" AS line
+MATCH (d:Disease {TREE_NUMBER: toString(line[0])})
+WHERE size(d.TREE_NUMBER)>4
+MATCH (d2:Disease {TREE_NUMBER:
+substring(d.TREE_NUMBER,0,(size(d.TREE_NUMBER)-4))})
+MERGE (d)-[:PARENT]->(d2)
