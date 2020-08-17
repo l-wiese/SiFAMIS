@@ -16,7 +16,7 @@ Furthermore, the JAVA_HOME and IGNITE_HOME environment variables need to be set 
 
 ## Get Project
 
-The project can either be cloned with `git clone https://gitlab.gwdg.de/jeromario.schaefer/sifamis.git` or downloaded as ZIP or TAR file. 
+The project can either be cloned or downloaded as ZIP or TAR file. 
 
 After cloning or downloading and unpacking, the project can be compiled and packaged with
 
